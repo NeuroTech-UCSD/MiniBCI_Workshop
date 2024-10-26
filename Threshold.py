@@ -2,13 +2,15 @@ from pylsl import StreamInlet, resolve_stream, StreamOutlet, StreamInfo
 import numpy as np
 import time
 
+
+
 class Threshold:
     def __init__(self) -> None:
         self.pull = False
         self.inlet = None
         self.flex_mean = 0
         self.relax_mean = 0
-    
+
     def get_signal(self):
         streams = resolve_stream('type', 'EEG')
         for stream in streams:
@@ -66,12 +68,18 @@ class Threshold:
         self.flex_mean = mean_flex_data
 
     def listen(self):
-        while self.pull == True:
-            sample, timestamp = self.inlet.pull_sample()
-            if sample[0]**2 > self.relax_mean + 0.2 * (self.flex_mean - self.relax_mean):
-                print("Siya is Flexing")
-            else:
-                print("No Flex")
+        sample, timestamp = self.inlet.pull_sample()
+        control = ""
+        #check for flex
+        if sample[0]**2 > self.relax_mean + 0.2 * (self.flex_mean - self.relax_mean):
+            control = "right"
+        
+        #else its relax
+        else:
+            control = "left"
+
+        return control
+
 
 
 if __name__ == "__main__":

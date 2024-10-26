@@ -1,6 +1,7 @@
 from pylsl import StreamInlet, resolve_stream, StreamOutlet, StreamInfo
 import numpy as np
 import time
+#comment
 
 class Threshold:
     def __init__(self) -> None:

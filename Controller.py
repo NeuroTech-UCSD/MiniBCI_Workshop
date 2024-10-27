@@ -6,7 +6,8 @@ threshold.get_signal()
 threshold.set_pull()
 threshold.calibrate()
 
+
 while True:
     key = threshold.listen()
-    pyautogui.press(key)
+    pyautogui.keyDown(key)
 

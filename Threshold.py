@@ -13,10 +13,11 @@ class Threshold:
         self.temp_threshold = 0
 
     def get_signal(self):
-        streams = resolve_stream('type', 'EEG')
+        streams = resolve_stream('type', 'EMG')
         for stream in streams:
             if stream.name() == "Siya":
-                self.inlet = StreamInlet(stream)
+                self.inlet = StreamInlet(stream, max_buflen = 3)
+                print('received stream')
                 break
     
     def set_pull(self):
@@ -67,19 +68,19 @@ class Threshold:
 
         self.relax_mean = mean_relax_data
         self.flex_mean = mean_flex_data
-        self.temp_threshold = (self.relax_mean + 0.2 * (self.flex_mean - self.relax_mean))/1.5
+        self.temp_threshold = (self.relax_mean + 0.05 * (self.flex_mean - self.relax_mean))
 
     def listen(self):
-        sample, timestamp = self.inlet.pull_sample(timeout=0.0)
+        sample, timestamp = self.inlet.pull_sample()
         control = ""
                 #check for flex
         if sample[0]**2 > self.temp_threshold:
-            print("right", sample[0]**2, self.temp_threshold)
+            #print("right", sample[0]**2, self.temp_threshold)
             control = "right"
                 
                 #else its relax
         else:
-            print("left", sample[0]**2, self.temp_threshold)
+            #print("left", sample[0]**2, self.temp_threshold)
             control = "left"
         return control
 

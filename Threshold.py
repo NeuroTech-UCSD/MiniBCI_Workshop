@@ -91,12 +91,12 @@ class Threshold:
                 #check for flex
         if sample[0]**2 > self.temp_threshold:
             #print("right", sample[0]**2, self.temp_threshold)
-            control = "right"
+            control = "left"
                 
                 #else its relax
         else:
             #print("left", sample[0]**2, self.temp_threshold)
-            control = "left"
+            control = "right"
         return control
 
 

@@ -1,12 +1,11 @@
 from pylsl import StreamInlet, resolve_stream, StreamOutlet, StreamInfo
 import numpy as np
 import time
-
-
+import yaml
+import math
 
 class Threshold:
     def __init__(self) -> None:
-        self.pull = False
         self.inlet = None
         self.flex_mean = 0
         self.relax_mean = 0
@@ -15,13 +14,12 @@ class Threshold:
     def get_signal(self):
         streams = resolve_stream('type', 'EMG')
         for stream in streams:
-            if stream.name() == "Siya":
-                self.inlet = StreamInlet(stream, max_buflen = 3)
+            if stream.name() == "EMG Game":
+                self.inlet = StreamInlet(stream, max_buflen = 1)
                 print('received stream')
                 break
     
-    def set_pull(self):
-        self.pull = True
+
 
     def calibrate(self):
         counter = 0
@@ -65,13 +63,30 @@ class Threshold:
 
         print("STOP!!!!!!!")
         
-
+        #update relax and flex means and calculate temp_threshold
         self.relax_mean = mean_relax_data
         self.flex_mean = mean_flex_data
-        self.temp_threshold = (self.relax_mean + 0.05 * (self.flex_mean - self.relax_mean))
+        self.temp_threshold = (math.sqrt(self.relax_mean) + 0.05 * (math.sqrt(self.flex_mean) - math.sqrt(self.relax_mean)))**2
+        print(f'relax mean: {self.relax_mean}')
+        print(f'flex mean: {self.flex_mean}')
+        print(f'threshold: {self.temp_threshold}')
+        #save data to config.yml file
+        yaml_values = {
+            'relax_mean': float(self.relax_mean), 
+            'flex_mean': float(self.flex_mean), 
+            'temp_threshold': float(self.temp_threshold)}
+        with open('config.yml', 'w') as file:
+            yaml.dump(yaml_values, file)
+
+
 
     def listen(self):
         sample, timestamp = self.inlet.pull_sample()
+
+        #repull a sample in case there is none in the inlet
+        while sample == None:
+            sample, timestamp = self.inlet.pull_sample()
+
         control = ""
                 #check for flex
         if sample[0]**2 > self.temp_threshold:
